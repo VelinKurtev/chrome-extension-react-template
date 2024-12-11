@@ -1,35 +1,85 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import "./App.css";
+import ParamRow from "./components/ParamRow";
+import { Param } from "./types";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [params, setParams] = useState<Param[]>([]);
+
+  const handleInputChange = (id: string, field: "key" | "value", value: string) => {
+    setParams((prevParams) =>
+      prevParams.map((param) =>
+        param.id === id ? { ...param, [field]: value } : param
+      )
+    );
+  };
+
+  const handleAddParam = () => {
+    setParams((prevParams) => [
+      ...prevParams,
+      { id: uuidv4(), key: "", value: "", selected: false },
+    ]);
+  };
+
+  const handleDeleteParam = (id: string) => {
+    const param = params.find((param) => param.id === id);
+    if (
+			param &&
+			window.confirm(
+				`Are you sure you want to delete parameter with key: ${
+					param.key !== "" ? param.key : "blank"
+				} and value: ${param.value !== "" ? param.value : "blank"}?`
+			)
+		) {
+			setParams((prevParams) => prevParams.filter((param) => param.id !== id));
+		}
+  };
+
+  const handleKeyPress = (id: string, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      const param = params.find((param) => param.id === id);
+      if (param && param.key && param.value) {
+        setParams((prevParams) =>
+          prevParams.map((param) =>
+            param.id === id ? { ...param, selected: true } : param
+          )
+        );
+      }
+    }
+  };
+
+  const handleCheckboxChange = (id: string) => {
+    setParams((prevParams) =>
+      prevParams.map((param) =>
+        param.id === id ? { ...param, selected: !param.selected } : param
+      )
+    );
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div>
+      <h1>URL Parameters Manager</h1>
+      <div className="params-container">
+        {params.map((param) => (
+          <ParamRow
+            key={param.id}
+            id={param.id}
+            keyValue={param.key}
+            value={param.value}
+            selected={param.selected}
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
+            onCheckboxChange={handleCheckboxChange}
+            onDelete={handleDeleteParam}
+          />
+        ))}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <button onClick={handleAddParam} className="add-button">
+        Add Parameter
+      </button>
+    </div>
+  );
 }
 
-export default App
+export default App;
