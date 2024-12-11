@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import "./App.css";
 import ParamRow from "./components/ParamRow";
@@ -6,6 +6,19 @@ import { Param } from "./types";
 
 function App() {
   const [params, setParams] = useState<Param[]>([]);
+
+  // Load params from localStorage when the app first loads
+  useEffect(() => {
+    const savedParams = localStorage.getItem("params");
+    if (savedParams) {
+      setParams(JSON.parse(savedParams));
+    }
+  }, []);
+
+  // Save params to localStorage whenever params change
+  useEffect(() => {
+    localStorage.setItem("params", JSON.stringify(params));
+  }, [params]);
 
   const handleInputChange = (id: string, field: "key" | "value", value: string) => {
     setParams((prevParams) =>
@@ -25,15 +38,15 @@ function App() {
   const handleDeleteParam = (id: string) => {
     const param = params.find((param) => param.id === id);
     if (
-			param &&
-			window.confirm(
-				`Are you sure you want to delete parameter with key: ${
-					param.key !== "" ? param.key : "blank"
-				} and value: ${param.value !== "" ? param.value : "blank"}?`
-			)
-		) {
-			setParams((prevParams) => prevParams.filter((param) => param.id !== id));
-		}
+      param &&
+      window.confirm(
+        `Are you sure you want to delete parameter with key: ${
+          param.key !== "" ? param.key : "blank"
+        } and value: ${param.value !== "" ? param.value : "blank"}?`
+      )
+    ) {
+      setParams((prevParams) => prevParams.filter((param) => param.id !== id));
+    }
   };
 
   const handleKeyPress = (id: string, e: React.KeyboardEvent<HTMLInputElement>) => {

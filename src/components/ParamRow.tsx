@@ -1,5 +1,6 @@
 import React from "react";
 import ParamInput from "./ParamInput";
+import "./ParamRow.css";
 
 interface ParamRowProps {
   id: string;
