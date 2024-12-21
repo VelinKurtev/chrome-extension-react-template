@@ -4,95 +4,154 @@ import "./App.css";
 import ParamRow from "./components/ParamRow";
 import { Param } from "./types";
 
+async function getCurrentTab(): Promise<chrome.tabs.Tab> {
+	return (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
+}
+
+// * * Add Light/Dark Themes
+// * * Add Params list with url things from Confluence Page
+// * * Add loading and current url
 function App() {
-  const [params, setParams] = useState<Param[]>([]);
+	const [params, setParams] = useState<Param[]>([]);
+	const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab>();
+	const [fetchedPresent, setFetchedPresent] = useState<boolean>(false);
 
-  // Load params from localStorage when the app first loads
-  useEffect(() => {
-    const savedParams = localStorage.getItem("params");
-    if (savedParams) {
-      setParams(JSON.parse(savedParams));
-    }
-  }, []);
+	const saveCurrentTab = () => {
+		getCurrentTab().then((tab) => {
+			if (tab) {
+				setCurrentTab(tab);
+			} else {
+				window.alert("Failed retrieving current tab!");
+			}
+		});
+	};
 
-  // Save params to localStorage whenever params change
-  useEffect(() => {
-    localStorage.setItem("params", JSON.stringify(params));
-  }, [params]);
+	useEffect(() => {
+		const savedParams = localStorage.getItem("params");
+		if (savedParams) {
+			setParams(JSON.parse(savedParams));
+		}
+	}, []);
 
-  const handleInputChange = (id: string, field: "key" | "value", value: string) => {
-    setParams((prevParams) =>
-      prevParams.map((param) =>
-        param.id === id ? { ...param, [field]: value } : param
+	useEffect(() => {
+		saveCurrentTab();
+
+		if (currentTab && !fetchedPresent) {
+			const presentParams: Param[] | undefined = currentTab.url
+				?.match(/&([^&=]+)=([^&]*)/g)
+				?.map((param) => {
+					const [key, value] = param.substring(1).split("=");
+					return {
+						id: uuidv4(),
+						key: key || "",
+						value: value || "",
+						selected: true,
+					};
+				});
+
+			if (presentParams) {
+				setParams((prevParams) => [
+					...prevParams,
+					...presentParams.filter((pp) => !prevParams.some((p) => p.key === pp.key)),
+				]);
+				setFetchedPresent(true);
+			}
+		}
+	}, [currentTab, fetchedPresent]);
+
+	useEffect(() => {
+		localStorage.setItem("params", JSON.stringify(params));
+	}, [params]);
+
+	const handleInputChange = (id: string, field: "key" | "value", value: string) => {
+		setParams((prevParams) =>
+			prevParams.map((param) =>
+				param.id === id ? { ...param, [field]: value } : param
+			)
+		);
+	};
+
+	const handleAddParam = () => {
+		setParams((prevParams) => [
+			...prevParams,
+			{ id: uuidv4(), key: "", value: "", selected: false },
+		]);
+	};
+
+	const handleDeleteParam = (id: string) => {
+		const param = params.find((param) => param.id === id);
+		if (
+			param &&
+			window.confirm(
+				`Are you sure you want to delete parameter with key: ${
+					param.key || "blank"
+				} and value: ${param.value || "blank"}?`
+			)
+		) {
+      const updatedParams = params.filter((param) => param.id !== id);
+			setParams(updatedParams);
+			handleUrlParametersChange(updatedParams);
+		}
+	};
+
+	const handleKeyPress = (id: string, e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+      const updatedParams = params.map((param) =>
+        param.id === id && param.key && param.value
+          ? { ...param, selected: true }
+          : param
       )
-    );
-  };
+			setParams(updatedParams);
+			handleUrlParametersChange(updatedParams);
+		}
+	};
 
-  const handleAddParam = () => {
-    setParams((prevParams) => [
-      ...prevParams,
-      { id: uuidv4(), key: "", value: "", selected: false },
-    ]);
-  };
+	const handleCheckboxChange = (id: string) => {
+    const updatedParams = params.map((param) =>
+      param.id === id ? { ...param, selected: !param.selected } : param
+    )
+		setParams(updatedParams)
+		handleUrlParametersChange(updatedParams);
+	};
 
-  const handleDeleteParam = (id: string) => {
-    const param = params.find((param) => param.id === id);
-    if (
-      param &&
-      window.confirm(
-        `Are you sure you want to delete parameter with key: ${
-          param.key !== "" ? param.key : "blank"
-        } and value: ${param.value !== "" ? param.value : "blank"}?`
-      )
-    ) {
-      setParams((prevParams) => prevParams.filter((param) => param.id !== id));
-    }
-  };
+	const handleUrlParametersChange = (parameters: Param[]) => {
+		getCurrentTab().then((tab) => {
+			if (tab) {
+				const cleanedUrl = tab.url!.split("&")[0];
+				const newUrl = parameters
+					.filter((p) => p.selected)
+					.reduce((url, p) => `${url}&${p.key}=${p.value}`, cleanedUrl);
 
-  const handleKeyPress = (id: string, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      const param = params.find((param) => param.id === id);
-      if (param && param.key && param.value) {
-        setParams((prevParams) =>
-          prevParams.map((param) =>
-            param.id === id ? { ...param, selected: true } : param
-          )
-        );
-      }
-    }
-  };
+				chrome.tabs.update(tab.id!, { url: newUrl });
+			} else {
+				window.alert("Failed to update the URL.");
+			}
+		});
+	};
 
-  const handleCheckboxChange = (id: string) => {
-    setParams((prevParams) =>
-      prevParams.map((param) =>
-        param.id === id ? { ...param, selected: !param.selected } : param
-      )
-    );
-  };
-
-  return (
-    <div>
-      <h1>URL Parameters Manager</h1>
-      <div className="params-container">
-        {params.map((param) => (
-          <ParamRow
-            key={param.id}
-            id={param.id}
-            keyValue={param.key}
-            value={param.value}
-            selected={param.selected}
-            onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
-            onCheckboxChange={handleCheckboxChange}
-            onDelete={handleDeleteParam}
-          />
-        ))}
-      </div>
-      <button onClick={handleAddParam} className="add-button">
-        Add Parameter
-      </button>
-    </div>
-  );
+	return (
+		<div>
+			<h1>URL Parameters Manager</h1>
+			<div className="params-container">
+				{params.map((param) => (
+					<ParamRow
+						key={param.id}
+						id={param.id}
+						keyValue={param.key}
+						value={param.value}
+						selected={param.selected}
+						onChange={handleInputChange}
+						onKeyPress={handleKeyPress}
+						onCheckboxChange={handleCheckboxChange}
+						onDelete={handleDeleteParam}
+					/>
+				))}
+			</div>
+			<button onClick={handleAddParam} className="add-button">
+				Add Parameter
+			</button>
+		</div>
+	);
 }
 
 export default App;

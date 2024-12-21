@@ -1,16 +1,23 @@
 {
-    "manifest_version": 3,
-    "name": "DE - URL Parameter Manager",
-    "version": "1.0.1",
-    "description": "DE - URL Parameter Manager",
-    "action": {
-      "default_popup": "index.html"
-    },
-    "permissions": [],
-    "icons": {
-      "16": "icon16.png",
-      "32": "icon32.png",
-      "64": "icon64.png",
-      "128": "icon128.png"
-    }
+  "manifest_version": 3,
+  "name": "DE - URL Parameter Manager",
+  "version": "1.0.2",
+  "description": "DE - URL Parameter Manager",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [
+    "tabs",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "64": "icon64.png",
+    "128": "icon128.png"
   }
+}
