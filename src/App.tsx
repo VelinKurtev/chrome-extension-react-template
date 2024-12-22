@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import "./App.css";
 import ParamRow from "./components/ParamRow";
 import { Param } from "./types";
+import ReactLoading from "react-loading";
 
 async function getCurrentTab(): Promise<chrome.tabs.Tab> {
 	return (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
@@ -10,11 +11,12 @@ async function getCurrentTab(): Promise<chrome.tabs.Tab> {
 
 // * * Add Light/Dark Themes
 // * * Add Params list with url things from Confluence Page
-// * * Add loading and current url
+// * * Add inserted by you separated
 function App() {
 	const [params, setParams] = useState<Param[]>([]);
 	const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab>();
 	const [fetchedPresent, setFetchedPresent] = useState<boolean>(false);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	const saveCurrentTab = () => {
 		getCurrentTab().then((tab) => {
@@ -88,30 +90,36 @@ function App() {
 				} and value: ${param.value || "blank"}?`
 			)
 		) {
-      const updatedParams = params.filter((param) => param.id !== id);
+			setIsLoading(true);
+			const updatedParams = params.filter((param) => param.id !== id);
 			setParams(updatedParams);
 			handleUrlParametersChange(updatedParams);
+			setTimeout(() => {
+				setIsLoading(false);
+			}, 750);
 		}
 	};
 
 	const handleKeyPress = (id: string, e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
-      const updatedParams = params.map((param) =>
-        param.id === id && param.key && param.value
-          ? { ...param, selected: true }
-          : param
-      )
+			setIsLoading(true);
+			const updatedParams = params.map((param) => param.id === id && param.key && param.value ? { ...param, selected: true } : param);
 			setParams(updatedParams);
 			handleUrlParametersChange(updatedParams);
+			setTimeout(() => {
+				setIsLoading(false);
+			}, 750);
 		}
 	};
 
 	const handleCheckboxChange = (id: string) => {
-    const updatedParams = params.map((param) =>
-      param.id === id ? { ...param, selected: !param.selected } : param
-    )
-		setParams(updatedParams)
+		setIsLoading(true);
+    	const updatedParams = params.map((param) => param.id === id ? { ...param, selected: !param.selected } : param);
+		setParams(updatedParams);
 		handleUrlParametersChange(updatedParams);
+		setTimeout(() => {
+			setIsLoading(false);
+		}, 750);
 	};
 
 	const handleUrlParametersChange = (parameters: Param[]) => {
@@ -132,7 +140,12 @@ function App() {
 	return (
 		<div>
 			<h1>URL Parameters Manager</h1>
-			<div className="params-container">
+			{isLoading && (
+				<div className="loading-overlay">
+					<ReactLoading type="spin" color="#fff" height={50} width={50} />
+				</div>
+			)}
+			<div className={`params-container ${isLoading ? "loading" : ""}`}>
 				{params.map((param) => (
 					<ParamRow
 						key={param.id}
