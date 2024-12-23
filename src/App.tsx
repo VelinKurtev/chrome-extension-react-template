@@ -38,7 +38,7 @@ function App() {
 
 	useEffect(() => {
 		saveCurrentTab();
-
+	
 		if (currentTab && !fetchedPresent) {
 			const presentParams: Param[] | undefined = currentTab.url
 				?.match(/&([^&=]+)=([^&]*)/g)
@@ -52,13 +52,27 @@ function App() {
 						addedByYou: false,
 					};
 				});
-
+	
 			if (presentParams) {
 				setIsLoading(true);
-				const updatedParams = presentParams.filter(pp => !pp.addedByYou).concat(params.filter(p => p.addedByYou));
+	
+				const uniqueParamsMap = new Map<string, Param>();
+				
+				params.filter((pp) => pp.addedByYou).forEach((pp) => {
+					uniqueParamsMap.set(pp.key, pp);
+				});
+	
+				presentParams.forEach((pp) => {
+					if (!uniqueParamsMap.has(pp.key)) {
+						uniqueParamsMap.set(pp.key, pp);
+					}
+				});
+	
+				const updatedParams = Array.from(uniqueParamsMap.values());
 				setParams(updatedParams);
 				setFetchedPresent(true);
 				handleUrlParametersChange(updatedParams);
+	
 				setTimeout(() => {
 					setIsLoading(false);
 				}, 750);
@@ -79,10 +93,22 @@ function App() {
 	};
 
 	const handleAddParam = () => {
-		setParams((prevParams) => [
-			...prevParams,
-			{ id: uuidv4(), key: "", value: "", selected: false, addedByYou: true },
-		]);
+		setParams((prevParams) => {
+			const uniqueParamsMap = new Map<string, Param>();
+			prevParams.forEach((pp) => uniqueParamsMap.set(pp.key, pp));
+	
+			const newParam: Param = {
+				id: uuidv4(),
+				key: "",
+				value: "",
+				selected: false,
+				addedByYou: true,
+			};
+	
+			uniqueParamsMap.set(newParam.key, newParam);
+	
+			return Array.from(uniqueParamsMap.values());
+		});
 	};
 
 	const handleDeleteParam = (id: string) => {
