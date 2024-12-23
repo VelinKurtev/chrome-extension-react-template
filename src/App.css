@@ -38,6 +38,13 @@ h1 {
 	pointer-events: none;
 }
 
+/* 
+!Add light and dark themes
+@media (prefers-color-scheme: light) {
+}
+@media (prefers-color-scheme: light) {
+} */
+
 .add-button {
   padding: 10px;
   font-size: 14px;

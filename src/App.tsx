@@ -9,12 +9,10 @@ async function getCurrentTab(): Promise<chrome.tabs.Tab> {
 	return (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
 }
 
-// * * Add Light/Dark Themes
 // * * Add Params list with url things from Confluence Page
 // * * Fix UI 
 // * * Change color on added by you
 // * * Add script to rebuild for safari
-// * * Add delete all button
 function App() {
 	const [params, setParams] = useState<Param[]>([]);
 	const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab>();
@@ -107,6 +105,21 @@ function App() {
 		}
 	};
 
+	const handleDeleteAllParams = () => {
+		if (
+			window.confirm(
+				`Are you sure you want to delete all parameters ?`
+			)
+		) {
+			setIsLoading(true);
+			setParams([]);
+			handleUrlParametersChange([]);
+			setTimeout(() => {
+				setIsLoading(false);
+			}, 750);
+		}
+	};
+
 	const handleKeyPress = (id: string, e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
 			setIsLoading(true);
@@ -169,6 +182,9 @@ function App() {
 			</div>
 			<button onClick={handleAddParam} className="add-button">
 				Add Parameter
+			</button>
+			<button onClick={handleDeleteAllParams} className="add-button">
+				Delete All Parameters
 			</button>
 		</div>
 	);
