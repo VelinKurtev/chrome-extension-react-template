@@ -4,15 +4,19 @@ import "./App.css";
 import ParamRow from "./components/ParamRow";
 import { Param } from "./types";
 import ReactLoading from "react-loading";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDumpster } from "@fortawesome/free-solid-svg-icons";
 
 async function getCurrentTab(): Promise<chrome.tabs.Tab> {
 	return (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
 }
 
 // * * Add Params list with url things from Confluence Page
-// * * Fix UI 
+// * * Prevent checkbox hit on no key and value
 // * * Change color on added by you
 // * * Add script to rebuild for safari
+// * * Add reminder for saving on key/ value change for enter
+// * * Add descriptions
 function App() {
 	const [params, setParams] = useState<Param[]>([]);
 	const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab>();
@@ -93,6 +97,7 @@ function App() {
 	};
 
 	const handleAddParam = () => {
+		setIsLoading(true);
 		setParams((prevParams) => {
 			const uniqueParamsMap = new Map<string, Param>();
 			prevParams.forEach((pp) => uniqueParamsMap.set(pp.key, pp));
@@ -109,6 +114,9 @@ function App() {
 	
 			return Array.from(uniqueParamsMap.values());
 		});
+		setTimeout(() => {
+			setIsLoading(false);
+		}, 750);
 	};
 
 	const handleDeleteParam = (id: string) => {
@@ -132,11 +140,7 @@ function App() {
 	};
 
 	const handleDeleteAllParams = () => {
-		if (
-			window.confirm(
-				`Are you sure you want to delete all parameters ?`
-			)
-		) {
+		if (window.confirm(`Are you sure you want to delete all parameters ?`)) {
 			setIsLoading(true);
 			setParams([]);
 			handleUrlParametersChange([]);
@@ -160,7 +164,9 @@ function App() {
 
 	const handleCheckboxChange = (id: string) => {
 		setIsLoading(true);
-    	const updatedParams = params.map((param) => param.id === id ? { ...param, selected: !param.selected } : param);
+		const updatedParams = params.map((param) =>
+			param.id === id ? { ...param, selected: !param.selected } : param
+		);
 		setParams(updatedParams);
 		handleUrlParametersChange(updatedParams);
 		setTimeout(() => {
@@ -206,12 +212,16 @@ function App() {
 					/>
 				))}
 			</div>
-			<button onClick={handleAddParam} className="add-button">
-				Add Parameter
-			</button>
-			<button onClick={handleDeleteAllParams} className="add-button">
-				Delete All Parameters
-			</button>
+			<div className={`actions-container ${params.length < 1 ? "single" : ""}`}>
+				<button onClick={handleAddParam} className="add-button">
+					Add Parameter
+				</button>
+				{params.length > 0 && (
+					<button onClick={handleDeleteAllParams} className="delete-button">
+						<FontAwesomeIcon icon={faDumpster} />
+					</button>
+				)}
+			</div>
 		</div>
 	);
 }
