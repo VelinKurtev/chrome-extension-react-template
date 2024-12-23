@@ -11,7 +11,10 @@ async function getCurrentTab(): Promise<chrome.tabs.Tab> {
 
 // * * Add Light/Dark Themes
 // * * Add Params list with url things from Confluence Page
-// * * Add inserted by you separated
+// * * Fix UI 
+// * * Change color on added by you
+// * * Add script to rebuild for safari
+// * * Add delete all button
 function App() {
 	const [params, setParams] = useState<Param[]>([]);
 	const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab>();
@@ -48,15 +51,19 @@ function App() {
 						key: key || "",
 						value: value || "",
 						selected: true,
+						addedByYou: false,
 					};
 				});
 
 			if (presentParams) {
-				setParams((prevParams) => [
-					...prevParams,
-					...presentParams.filter((pp) => !prevParams.some((p) => p.key === pp.key)),
-				]);
+				setIsLoading(true);
+				const updatedParams = presentParams.filter(pp => !pp.addedByYou).concat(params.filter(p => p.addedByYou));
+				setParams(updatedParams);
 				setFetchedPresent(true);
+				handleUrlParametersChange(updatedParams);
+				setTimeout(() => {
+					setIsLoading(false);
+				}, 750);
 			}
 		}
 	}, [currentTab, fetchedPresent]);
@@ -76,7 +83,7 @@ function App() {
 	const handleAddParam = () => {
 		setParams((prevParams) => [
 			...prevParams,
-			{ id: uuidv4(), key: "", value: "", selected: false },
+			{ id: uuidv4(), key: "", value: "", selected: false, addedByYou: true },
 		]);
 	};
 
@@ -103,7 +110,7 @@ function App() {
 	const handleKeyPress = (id: string, e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
 			setIsLoading(true);
-			const updatedParams = params.map((param) => param.id === id && param.key && param.value ? { ...param, selected: true } : param);
+			const updatedParams = params.map((param) => param.id === id && param.key && param.value ? { ...param, selected: true, addedByYou: true } : param);
 			setParams(updatedParams);
 			handleUrlParametersChange(updatedParams);
 			setTimeout(() => {

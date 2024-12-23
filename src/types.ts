@@ -4,4 +4,5 @@ export interface Param {
     key: string;
     value: string;
     selected: boolean;
+    addedByYou: boolean;
   }

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "DE - URL Parameter Manager",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "DE - URL Parameter Manager",
   "action": {
     "default_popup": "index.html"
