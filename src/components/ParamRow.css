@@ -16,6 +16,7 @@
   .param-row:hover {
     border-color: var(--primary-color);
     background-color: rgba(0, 123, 255, 0.1);
+    cursor: pointer;
 }
   
   .param-row.selected {
@@ -26,6 +27,10 @@
   .select-checkbox {
     margin-right: 10px;
     cursor: pointer;
+  }
+
+  .select-checkbox.disabled {
+    cursor: not-allowed;
   }
   
   .param-input {

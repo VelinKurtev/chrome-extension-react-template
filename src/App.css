@@ -10,7 +10,7 @@
 :root {
   --bg-color: #ffffff;
   --text-color: #000000;
-  ---primary-color: #007bff; 
+  --primary-color: #007bff; 
   --secondary-color: #f44336;
   --highlight-color: #cce7ff; 
   --highlight-border-color: #80bfff; 
@@ -27,20 +27,27 @@
   }
 }
 
-/* Header */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 h1 {
   text-align: center;
   margin-bottom: 20px;
   font-size: 2rem;
 }
 
-/* Params Container */
 .params-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 15px;
-  padding: 10px;
+  padding: 10px 10px 0px 10px;
+  max-height: 300px;
+  margin-bottom: 10px;
+  overflow-y: auto
 }
 
 .params-container.loading {
@@ -58,8 +65,12 @@ h1 {
   justify-content: center;
 }
 
-/* Buttons */
-.add-button {
+.actions-container.single > .add-button {
+  padding: 10px 50%;
+  font-size: 20px;
+}
+
+.add-button, .tags-button {
   padding: 10px 20px;
   font-size: 14px;
   cursor: pointer;
@@ -70,15 +81,18 @@ h1 {
   transition: transform 0.2s, background-color 0.2s;
 }
 
-.add-button:hover {
+.tags-button {
+  background-color: #e6cc00;
+}
+
+.add-button:hover, .tags-button:hover {
   transform: scale(1.05);
 }
 
-.add-button:active {
+.add-button:active, .tags-button:active {
   transform: scale(0.95);
 }
 
-/* Loading Overlay */
 .loading-overlay {
   position: fixed;
   top: 0;

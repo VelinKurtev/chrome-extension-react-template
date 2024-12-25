@@ -34,8 +34,9 @@ const ParamRow: React.FC<ParamRowProps> = ({
 			<input
 				type="checkbox"
 				checked={selected}
+				disabled={keyValue === '' || value === ''}
 				onChange={() => onCheckboxChange(id)}
-				className="select-checkbox"
+				className={`select-checkbox ${keyValue === '' || value === '' ? 'disabled' : ''}`}
 			/>
 			<ParamInput
 				type="text"
