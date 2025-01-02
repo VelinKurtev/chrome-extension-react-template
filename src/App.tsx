@@ -12,10 +12,9 @@ async function getCurrentTab(): Promise<chrome.tabs.Tab> {
 	return (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
 }
 
-// * * Change color on added by you
 // * * Add script to rebuild for safari
 // * * Add reminder for saving on key/ value change for enter
-// * * Add rest of URL params, add checkbox, check present, fix UI table
+// * * Add checkbox, check present, fix UI table
 function App() {
 	const [params, setParams] = useState<Param[]>([]);
 	const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab>();
@@ -227,6 +226,7 @@ function App() {
                             keyValue={param.key}
                             value={param.value}
                             selected={param.selected}
+							addedByYou={param.addedByYou}
                             onChange={handleInputChange}
                             onKeyPress={handleKeyPress}
                             onCheckboxChange={handleCheckboxChange}

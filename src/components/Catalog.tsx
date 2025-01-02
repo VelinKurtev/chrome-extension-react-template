@@ -2,9 +2,7 @@ import "./Catalog.css";
 import { paramsData } from "./catalogParams";
 
 function Catalog() {
-   
 //! Add checkboxes, numeric input, fix UI, 
-
 	return (
         <div className="catalog">
             <h1>Parameter Catalog</h1>
