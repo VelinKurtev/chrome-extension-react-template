@@ -14,7 +14,7 @@ async function getCurrentTab(): Promise<chrome.tabs.Tab> {
 
 // * * Add script to rebuild for safari
 // * * Add reminder for saving on key/ value change for enter
-// * * Add checkbox, check present, fix UI table
+// * * Add catalog func
 function App() {
 	const [params, setParams] = useState<Param[]>([]);
 	const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab>();
