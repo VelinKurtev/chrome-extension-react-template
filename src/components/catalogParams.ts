@@ -89,7 +89,7 @@ export const paramsData: ParamsData[] = [
         options: ["boolean"],
     },
     {
-        paramName: "resizible",
+        paramName: "resizeable",
         description: "This parameter lets you resize the stage by resizing the window, and is the default behavior in a browser. However we turn it off by default within the IDE. Turning it on is useful for looking at how things scale.",
         options: ["boolean"],
     },

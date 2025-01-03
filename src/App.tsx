@@ -11,10 +11,8 @@ import Catalog from "./components/Catalog";
 async function getCurrentTab(): Promise<chrome.tabs.Tab> {
 	return (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
 }
-
 // * * Add script to rebuild for safari
-// * * Add reminder for saving on key/ value change for enter
-// * * Add catalog func
+// * * Add reminder for saving on key / value change for enter
 function App() {
 	const [params, setParams] = useState<Param[]>([]);
 	const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab>();
@@ -250,7 +248,20 @@ function App() {
                     )}
                 </div>
             </div>
-            {showCatalog && <Catalog />}
+			{showCatalog && (
+				<Catalog
+					initialParams={params}
+					onClose={(updatedParams) => {
+						setIsLoading(true);
+						setParams(updatedParams);
+						handleUrlParametersChange(updatedParams);
+						setShowCatalog(false);
+						setTimeout(() => {
+							setIsLoading(false);
+						}, 750);
+					}}
+				/>
+			)}
         </div>
 	);
 }
